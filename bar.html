@@ -1,0 +1,135 @@
+<meta charset = "utf-8">
+<style>
+    canvas{
+        border :1px solid #f0f0f0;
+    }
+    img{
+        display:none;
+    }
+</style>
+<script>
+    let logo;
+    window.onload = function(){
+        logo = new Image();
+        logo.onload = function(){
+
+        }
+        logo.src = "logo.png";
+    }
+    let ctx;
+    let WIDTH,HEIGHT;
+    let getline = false;
+    function getlineChart(){     
+        getline = true;                              
+        const MARGIN_BORDER = 50;
+        const ARROW = 10;
+        const LINE_HEIGHT = 50;
+        const ITEM_MARGIN = 50;
+        const BAR_WIDTH = 25;
+        let can = document.querySelector("#can");
+        ctx = can.getContext("2d");
+        ctx.textAlign ="center";
+        ctx.textBaseline = "middle";
+
+        WIDTH = can.width;
+        HEIGHT = can.height; 
+
+        ctx.setLineDash([0]);
+        ctx.strokeStyle = "black";
+        //背景
+        let img = document.querySelector("img");
+        let bg = ctx.createPattern(img,"repeat");
+        ctx.fillStyle = bg;
+        ctx.fillRect(0,0,WIDTH,HEIGHT);
+        
+        ctx.drawImage(logo,0,0,logo.width,logo.height/2,WIDTH-logo.width,0,logo.width,logo.height/2);
+
+        ctx.fillStyle = "black";
+        //绘制坐标        
+        ctx.beginPath();
+        ctx.moveTo(MARGIN_BORDER,MARGIN_BORDER);
+        ctx.lineTo(MARGIN_BORDER,HEIGHT-MARGIN_BORDER);
+        ctx.lineTo(WIDTH - MARGIN_BORDER,HEIGHT-MARGIN_BORDER);
+        ctx.stroke();
+        //绘制箭头
+        ctx.beginPath();
+        ctx.moveTo(MARGIN_BORDER,MARGIN_BORDER);
+        ctx.lineTo(MARGIN_BORDER-ARROW/2,MARGIN_BORDER+ARROW);
+        ctx.lineTo(MARGIN_BORDER+ARROW/2,MARGIN_BORDER+ARROW);
+        ctx.closePath();
+        ctx.fill();
+        //绘制等高线
+        let lines = (HEIGHT-MARGIN_BORDER*2)/LINE_HEIGHT;
+        for(let i=1;i <= lines;i++){
+            ctx.beginPath();
+            ctx.moveTo(MARGIN_BORDER , HEIGHT - MARGIN_BORDER - i * LINE_HEIGHT );
+            ctx.lineTo(WIDTH-MARGIN_BORDER,HEIGHT - MARGIN_BORDER - i * LINE_HEIGHT);
+            ctx.stroke();
+        }
+        //绘制Y轴坐标
+        for(let i=0;i<=lines;i++){
+            ctx.fillText(i*LINE_HEIGHT,MARGIN_BORDER/2,HEIGHT-MARGIN_BORDER-i*LINE_HEIGHT);
+        }
+       
+        //绘制x轴坐标
+        let items = document.querySelectorAll("input[title]");
+        items.forEach(function({title},index){
+            ctx.fillText(title,MARGIN_BORDER+ITEM_MARGIN+BAR_WIDTH/2+(ITEM_MARGIN+BAR_WIDTH)*index,HEIGHT-MARGIN_BORDER+15);
+        });
+        let grd = ctx.createLinearGradient(WIDTH,0,100,100);
+        grd.addColorStop(1,"pink");
+        grd.addColorStop(0,"skyblue");
+        ctx.fillStyle = grd;
+        //绘制柱子        
+        ctx.shadowColor = "lightgray";
+        ctx.shadowOffsetX = 10;
+        ctx.shadowOffsety = -10;
+        ctx.shadowBlur = 5;
+        
+        ctx.beginPath();  
+            
+        items.forEach(function({value},index){    
+            ctx.fillRect(MARGIN_BORDER+ITEM_MARGIN+index*(ITEM_MARGIN+BAR_WIDTH),HEIGHT-MARGIN_BORDER-value,BAR_WIDTH,value);             
+        });
+        items.forEach(function({value},index){
+            ctx.fillText(value,MARGIN_BORDER+ITEM_MARGIN+index*(ITEM_MARGIN+BAR_WIDTH)+BAR_WIDTH/2,HEIGHT-MARGIN_BORDER-value-10);
+        });
+        ctx.fill(); 
+        ctx.fillStyle = "black"; 
+    }  
+        //十字线
+        function crossline(e){
+            if(getline){
+                ctx.clearRect(0,0,WIDTH,HEIGHT);
+                getlineChart();  
+                let x= e.offsetX;
+                let y= e.offsetY;
+                ctx.setLineDash([5]);
+                ctx.strokeStyle = "gray";
+
+
+                ctx.beginPath();
+                ctx.moveTo(0,y);
+                ctx.lineTo(WIDTH,y);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(x,0);
+                ctx.lineTo(x,HEIGHT);
+                ctx.stroke();
+            }
+            
+        }
+
+      
+   
+</script>
+ItemA:<input name="course" value= "178" title = "ItemA" style= "margin-top:5px"><br>
+ItemB:<input name="course" value= "158" title = "ItemB" style= "margin-top:5px"><br>
+ItemC:<input name="course" value= "108" title = "ItemC" style= "margin-top:5px"><br>
+ItemD:<input name="course" value= "98" title = "ItemD" style= "margin-top:5px"><br>
+ItemE:<input name="course" value= "118" title = "ItemE" style= "margin-top:5px"><br>
+<img src="bg.gif" >
+<button  onclick = "getlineChart()" style= "margin-top:10px">Chart</button><hr>
+<canvas id='can' width="500" height = "380" onmousemove= "crossline(event)"></canvas>
+
